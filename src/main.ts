@@ -1,30 +1,26 @@
 import dotenv from "dotenv";
-import express from 'express';
-const MAX = require('max-exchange-api-node');
-
 dotenv.config();
+
+import express from 'express';
+import { maxClientText } from "./max";
+import { redisTest } from "./redis";
+
 const app = express();
 const port = 3000;
 
 app.get('/', (req, res) => {
-    const max = new MAX({
-        accessKey: process.env.ACCESS_KEY,
-        secretKey: process.env.SECRET_KEY
-    });
+    res.send('alive');
+});
 
+app.get('/max', (req, res) => {
+    maxClientText().then((value) => res.json(value));
+});
 
-    const rest = max.rest();
-
-    Promise.all([
-        rest.markets(),
-        rest.orders({ market: 'maxtwd', state: ['wait', 'convert', 'done'] }),
-    ]).then((value) => {
-        console.dir(value);
-        res.json(value);
-    });
-})
+app.get('/redis', (req, res) => {
+    redisTest().then((value) => res.json(value));
+});
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
-})
+});
 
